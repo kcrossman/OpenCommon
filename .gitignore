@@ -1,0 +1,18 @@
+# IDE - Visual Studio
+.vs/
+*.suo
+*.user
+
+# IDE - VS Code
+.vscode/
+
+# IDE - WebStorm
+.idea/
+
+# Build
+[Bb]in/
+[Oo]bj/
+
+# System Files
+.DS_Store
+Thumbs.db
