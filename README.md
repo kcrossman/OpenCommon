@@ -1,2 +1,2 @@
 # OpenCommon
-Simple Open-Sourced C# Common library for shared functionality between my Open-Sourced projects.
+Simple Open-Sourced C# library for shared functionality between my Open-Sourced projects.
