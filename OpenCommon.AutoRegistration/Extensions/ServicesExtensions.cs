@@ -1,73 +1,102 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-using OpenCommon.AutoRegistration.Annotations;
+using OpenCommon.AutoRegistration.Attributes;
+using OpenCommon.AutoRegistration.Models;
 
 namespace OpenCommon.AutoRegistration.Extensions
 {
     public static class ServicesExtensions
     {
+        private static readonly List<Type> SupportedAttributes;
+
+        static ServicesExtensions()
+        {
+            var baseAttribute = typeof(BaseAutoRegistration);
+            SupportedAttributes = Assembly.GetExecutingAssembly().GetTypes().Where(t => baseAttribute.IsAssignableFrom(t) && baseAttribute != t).ToList();
+        }
+
         /// <summary>
         /// This will auto-register any Transient, Scoped, and Singleton-attributed interfaces/classes.
         /// </summary>
         /// <remarks>
         /// The largest scope (Singleton > Scoped > Transient) will override others.
         /// </remarks>
-        public static Dictionary<Type, Type> AutoRegisterDependencies(this IServiceCollection services)
+        public static List<DependencyMapping> AutoRegisterDependencies(this IServiceCollection services)
         {
-            var attributes = new List<Type> { typeof(Transient), typeof(Scoped), typeof(Singleton) };
-            var assemblyTypes = Assembly.GetCallingAssembly().GetReferencedAssemblies().Select(Assembly.Load).SelectMany(a => a.GetTypes()).ToList();
+            var assemblies = Assembly.GetCallingAssembly().GetReferencedAssemblies().Select(Assembly.Load).SelectMany(a => a.GetTypes()).ToList();
+            var attributedAssemblies = assemblies.Where(at => at.CustomAttributes.Any(ata => SupportedAttributes.Contains(ata.AttributeType))).ToList();
 
-            var registrations = new Dictionary<Type, Type>();
-            foreach (var attribute in attributes)
+            var dependencyMappings = new List<DependencyMapping>();
+            foreach (var attributedAssembly in attributedAssemblies)
             {
-                var attributedTypes = assemblyTypes.Where(at => at.CustomAttributes.Any(ata => ata.AttributeType == attribute)).ToList();
-                foreach (var attributedType in attributedTypes)
+                var assemblyAttributes = attributedAssembly.GetCustomAttributes<BaseAutoRegistration>(false).OrderByDescending(a => a.RegistrationPriority).Select(a => a.GetType()).ToList();
+                var assemblyAttribute = assemblyAttributes[0];
+
+                if (attributedAssembly.IsClass)
                 {
-                    Type implementedType;
-                    if (attributedType.IsClass)
+                    services.RegisterDependency(assemblies, dependencyMappings, assemblyAttribute, attributedAssembly);
+                }
+                else if (attributedAssembly.IsInterface)
+                {
+                    var implementedTypes = assemblies.Where(at => attributedAssembly.IsAssignableFrom(at) && at != attributedAssembly).ToList();
+                    if (implementedTypes.Count == 0)
                     {
-                        implementedType = attributedType;
+                        Debug.Write($"{ attributedAssembly.FullName } is not implemented and will not be auto registered.");
                     }
-                    else if (attributedType.IsInterface)
+                    else
                     {
-                        var implementedTypes = assemblyTypes.Where(at => attributedType.IsAssignableFrom(at) && at != attributedType).ToList();
-                        if (implementedTypes.Count != 1)
+                        foreach (var implementedType in implementedTypes)
                         {
-                            throw new NotSupportedException($"{attributedType.FullName} is not implemented properly for dependency auto registration.");
+                            services.RegisterDependency(assemblies, dependencyMappings, assemblyAttribute, attributedAssembly, implementedType);
                         }
-
-                        implementedType = implementedTypes[0];
                     }
-                    else
-                    {
-                        throw new NotSupportedException($"{attributedType.FullName} is not an expected attributed type in dependency auto registration.");
-                    }
-                    
-                    if (attribute == typeof(Transient))
-                    {
-                        services.AddTransient(attributedType, implementedType);
-                    }
-                    else if (attribute == typeof(Scoped))
-                    {
-                        services.AddScoped(attributedType, implementedType);
-                    }
-                    else if (attribute == typeof(Singleton))
-                    {
-                        services.AddSingleton(attributedType, implementedType);
-                    }
-                    else
-                    {
-                        throw new NotSupportedException($"{attribute.FullName} is not supported in dependency auto registration");
-                    }
-
-                    registrations[attributedType] = implementedType;
+                }
+                else
+                {
+                    throw new NotSupportedException($"{attributedAssembly.FullName} is not an expected attributed type in dependency auto registration.");
                 }
             }
-            
-            return registrations;
+
+            return dependencyMappings;
+        }
+
+        private static void RegisterDependency(this IServiceCollection services, List<Type> assemblies, List<DependencyMapping> dependencyMappings, Type attributeType, Type serviceType, Type implementationType = null)
+        {
+            if (!SupportedAttributes.Contains(attributeType))
+            {
+                throw new NotSupportedException($"{attributeType.FullName} is not supported by dependency auto registration");
+            }
+
+            if (implementationType == null)
+            {
+                implementationType = serviceType;
+            }
+
+            if (attributeType == typeof(Transient))
+            {
+                services.AddTransient(serviceType, implementationType);
+            }
+            else if (attributeType == typeof(Scoped))
+            {
+                services.AddScoped(serviceType, implementationType);
+            }
+            else if (attributeType == typeof(Singleton))
+            {
+                services.AddSingleton(serviceType, implementationType);
+            }
+
+            var dependencyMapping =
+                new DependencyMapping
+                {
+                    AttributeType = attributeType,
+                    ServiceType = serviceType,
+                    ImplementationType = implementationType
+                };
+            dependencyMappings.Add(dependencyMapping);
         }
     }
 }
