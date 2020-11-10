@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OpenCommon.AutoRegistration.Models
+namespace OpenCommon.DependencyInjection.Models
 {
     public class DependencyMapping
     {

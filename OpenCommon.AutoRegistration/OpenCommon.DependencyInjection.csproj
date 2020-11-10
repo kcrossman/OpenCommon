@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Kody Crossman</Authors>
+    <Description>Automatic Dependency Injection.</Description>
+    <PackageId>kcrossman.OpenCommon.DependencyInjection</PackageId>
+    <PackageProjectUrl>https://github.com/kcrossman/OpenCommon</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/kcrossman/OpenCommon/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/kcrossman/OpenCommon</RepositoryUrl>
+    <Version>2.0.0</Version>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningLevel>1</WarningLevel>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="1.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Interfaces\" />
+  </ItemGroup>
+
+</Project>

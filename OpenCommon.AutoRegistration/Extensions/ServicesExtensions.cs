@@ -4,10 +4,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-using OpenCommon.AutoRegistration.Attributes;
-using OpenCommon.AutoRegistration.Models;
+using OpenCommon.DependencyInjection.Attributes;
+using OpenCommon.DependencyInjection.Models;
 
-namespace OpenCommon.AutoRegistration.Extensions
+namespace OpenCommon.DependencyInjection.Extensions
 {
     public static class ServicesExtensions
     {
@@ -15,7 +15,7 @@ namespace OpenCommon.AutoRegistration.Extensions
 
         static ServicesExtensions()
         {
-            var baseAttribute = typeof(BaseAutoRegistration);
+            var baseAttribute = typeof(RegistrationAttribute);
             SupportedAttributes = Assembly.GetExecutingAssembly().GetTypes().Where(t => baseAttribute.IsAssignableFrom(t) && baseAttribute != t).ToList();
         }
 
@@ -33,7 +33,7 @@ namespace OpenCommon.AutoRegistration.Extensions
             var dependencyMappings = new List<DependencyMapping>();
             foreach (var attributedAssembly in attributedAssemblies)
             {
-                var assemblyAttributes = attributedAssembly.GetCustomAttributes<BaseAutoRegistration>(false).OrderByDescending(a => a.RegistrationPriority).Select(a => a.GetType()).ToList();
+                var assemblyAttributes = attributedAssembly.GetCustomAttributes<RegistrationAttribute>(false).OrderByDescending(a => a.RegistrationPriority).Select(a => a.GetType()).ToList();
                 var assemblyAttribute = assemblyAttributes[0];
 
                 if (attributedAssembly.IsClass)

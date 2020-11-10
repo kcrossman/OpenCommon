@@ -1,10 +1,10 @@
-﻿namespace OpenCommon.AutoRegistration.Attributes
+﻿namespace OpenCommon.DependencyInjection.Attributes
 {
     /// <summary>
     /// Use to always create a new instance when injected.
     /// </summary>
-    public class Transient : BaseAutoRegistration
+    public class Transient : RegistrationAttribute
     {
-        public virtual short RegistrationSequence => 1;
+        public override short RegistrationPriority => 1;
     }
 }
