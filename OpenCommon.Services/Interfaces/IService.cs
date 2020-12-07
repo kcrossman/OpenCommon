@@ -1,4 +1,6 @@
-﻿using OpenCommon.DependencyInjection.Attributes;
+﻿using System.Threading.Tasks;
+using OpenCommon.DependencyInjection.Attributes;
+using OpenCommon.Services.Models;
 
 namespace OpenCommon.Services.Interfaces
 {
@@ -8,5 +10,6 @@ namespace OpenCommon.Services.Interfaces
     [Scoped]
     public interface IService
     {
+        Task<ServiceReceipt> SendRequest(ServiceRequest request);
     }
 }

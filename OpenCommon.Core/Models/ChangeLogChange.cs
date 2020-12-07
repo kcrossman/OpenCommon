@@ -8,10 +8,10 @@ namespace OpenCommon.Core.Models
 
         public string After { get; set; }
 
-        private List<string> changes;
+        private List<string> _changes;
         public List<string> Changes {
-            get => changes ?? (changes = new List<string>());
-            set => changes = value;
+            get => _changes ??= new List<string>();
+            set => _changes = value;
         }
     }
 }
