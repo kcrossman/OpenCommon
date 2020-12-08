@@ -45,7 +45,7 @@ namespace OpenCommon.DependencyInjection.Extensions
                     var implementedTypes = assemblies.Where(at => attributedAssembly.IsAssignableFrom(at) && at != attributedAssembly).ToList();
                     if (implementedTypes.Count == 0)
                     {
-                        Debug.Write($"{ attributedAssembly.FullName } is not implemented and will not be auto registered.");
+                        Debug.WriteLine($"{ attributedAssembly.FullName } is not implemented and will not be auto registered.");
                     }
                     else
                     {

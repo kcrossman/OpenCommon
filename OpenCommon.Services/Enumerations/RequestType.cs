@@ -2,9 +2,10 @@
 {
     public enum RequestType
     {
-        Command,
-        Query,
+        Ping,
         Contract,
-        Ping
+        RequestResponse,
+        Command,
+        Query
     }
 }
